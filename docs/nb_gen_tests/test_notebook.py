@@ -18,21 +18,21 @@ import os
 import re
 import sys
 from copy import deepcopy
-from os import remove, walk, listdir
+from os import listdir, remove, walk
 from os.path import abspath, dirname, join, realpath
 from pathlib import Path
-from typing import List, Tuple, Mapping, Any
+from typing import Any, List, Mapping, Tuple
 
 import nbformat
 import pytest
-from nbconvert.preprocessors import ExecutePreprocessor
-
 from nb_gen.gen_question_notebooks import (
-    init_snapshots,
+    NETWORK_NAME,
+    execute_notebook,
     generate_notebook,
     get_name_to_qclass,
-    NETWORK_NAME,
+    init_snapshots,
 )
+from nbconvert.preprocessors import ExecutePreprocessor
 from nbformat import NotebookNode
 
 from pybatfish.client.session import Session
@@ -220,7 +220,7 @@ def test_markdown_in_generated_notebooks(generated_notebooks):
             _compare_data_str(fresh_cell["source"], checked_in_cell["source"])
     except AssertionError as e:
         with io.open("{}.testout".format(str(filepath)), "w", encoding="utf-8") as f:
-            nbformat.write(fresh, f)
+            nbformat.write(execute_notebook(fresh, filepath.stem), f)
             pytest.fail(
                 "{} failed output validation:\n{}".format(filepath, e), pytrace=False
             )
